@@ -13,4 +13,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: harupy/find-trailing-whitespace@master
+    
+    - name: Get Changed Files
+      run: |
+        git diff --name-only ${{ github.event.before }} ${{ github.sha }} > changed_files.txt
+
+
+    - name: Check white spaces scripts
+      run: |
+
+        CHANGED_FILES="${{ steps.changed-files.outputs.files }}"
+        tw_lines=""
+
+        for file in $CHANGED_FILES
+        do
+        lines=$(egrep -rnIH " +$" $file | cut -f-2 -d ":")
+        if [ ! -z "$lines" ]; then
+            tw_lines+=$([[ -z "$tw_lines" ]] && echo "$lines" || echo $'\n'"$lines")
+        fi
+        done
+
+        exit_code=0
+
+        # If tw_lines is not empty, change the exit code to 1 to fail the CI.
+        if [ ! -z "$tw_lines" ]; then
+        echo -e "\n***** Lines containing trailing whitespace *****\n"
+        echo -e "${tw_lines[@]}"
+        echo -e "\nFailed.\n"
+        exit_code=1
+        fi
+
+        exit $exit_code
+
+
