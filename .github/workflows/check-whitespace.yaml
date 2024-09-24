@@ -17,8 +17,8 @@ jobs:
     - name: Get Changed Files
       run: |
           git fetch origin +refs/pull/${{ github.event.pull_request.number }}/merge
-          echo "Changed files in this PR:"
-          git diff --name-only HEAD~1 HEAD > changed_files.txt
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          git diff --name-only origin/${BASE_REF}...HEAD > changed_files.txt
 
 
     - name: Check white spaces scripts
