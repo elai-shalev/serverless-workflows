@@ -6,7 +6,7 @@ on:
     branches: [ "main" ]
     paths:
       - .github/workflows/check-whitespace.yaml
-      - '**/application.properties'
+      - 'mta-v7.x/**'
 
 jobs:
   check-whitespace:
@@ -15,16 +15,16 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Get Changed Files
-      id: get-chenged-files
+      id: get-changed-files
       uses: tj-actions/verify-changed-files@v20
       with:
         files: |
-          **/application.properties
+          **application.properties
 
 
     - name: Check white spaces scripts
       env:
-        CHANGED_FILES: ${{ steps.get-chenged-files.outputs.files }}
+        CHANGED_FILES: ${{ steps.get-changed-files.outputs.files }}
       run: |
 
         tw_lines=""
