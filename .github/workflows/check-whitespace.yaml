@@ -15,16 +15,18 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Get Changed Files
-      run: |
-          git fetch origin +refs/pull/${{ github.event.pull_request.number }}/merge
-          BASE_REF="${{ github.event.pull_request.base.ref }}"
-          git diff --name-only origin/${BASE_REF}...HEAD > changed_files.txt
+      id: get-chenged-files
+      uses: tj-actions/verify-changed-files@v20
+      with:
+        files: |
+          **/application.properties
 
 
     - name: Check white spaces scripts
+      env:
+        CHANGED_FILES: ${{ steps.get-chenged-files.outputs.files }}
       run: |
 
-        CHANGED_FILES="${{ steps.changed-files.outputs.files }}"
         tw_lines=""
 
         for file in $CHANGED_FILES
