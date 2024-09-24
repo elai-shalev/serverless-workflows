@@ -1,0 +1,16 @@
+name: Check trailing white spaces before merge
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+    paths:
+      - .github/workflows/check-whitespace.yaml
+      - '**/application.properties'
+
+jobs:
+  check-whitespace:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: harupy/find-trailing-whitespace@master
