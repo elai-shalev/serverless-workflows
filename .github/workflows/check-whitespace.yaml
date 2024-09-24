@@ -11,10 +11,12 @@ on:
 jobs:
   check-whitespace:
     runs-on: ubuntu-latest
-    steps:    
+    steps:
+    - uses: actions/checkout@v4
+    
     - name: Get Changed Files
-      id: get-changed-files
-      uses: tj-actions/verify-changed-files@v20
+      id: changed-files
+      uses: tj-actions/changed-files@v45
       with:
         files: |
           **/application.properties
@@ -22,12 +24,12 @@ jobs:
 
     - name: Check white spaces scripts
       env:
-        CHANGED_FILES: ${{ steps.get-changed-files.outputs.files }}
+        ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
       run: |
 
         tw_lines=""
 
-        for file in $CHANGED_FILES
+        for file in ${ALL_CHANGED_FILES}
         do
         lines=$(egrep -rnIH " +$" $file | cut -f-2 -d ":")
         if [ ! -z "$lines" ]; then
