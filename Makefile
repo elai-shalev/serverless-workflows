@@ -14,6 +14,7 @@ WORKFLOWS = \
 	mtv-migration \
 	modify-vm-resources \
 	rpj \
+	aap-job \
 	$(NULL)
 
 # Dynamic rule patten that uses one of the workflows and sets the workflow id

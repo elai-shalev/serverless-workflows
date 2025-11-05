@@ -6,7 +6,7 @@ set -o errexit
 WORKFLOW_FOLDER=$1
 WORKFLOW_ID=$2
 WORKFLOW_IMAGE_REGISTRY="${WORKFLOW_IMAGE_REGISTRY:-quay.io}"
-WORKFLOW_IMAGE_NAMESPACE="${WORKFLOW_IMAGE_NAMESPACE:-orchestrator}"
+WORKFLOW_IMAGE_NAMESPACE="${WORKFLOW_IMAGE_NAMESPACE:-eshalev}"
 WORKFLOW_IMAGE_REPO="${WORKFLOW_IMAGE_REPO:-serverless-workflow-${WORKFLOW_ID}}"
 WORKFLOW_IMAGE_TAG="${WORKFLOW_IMAGE_TAG:-latest}"
 
@@ -58,12 +58,12 @@ if [ "${ENABLE_PERSISTENCE}" = true ]; then
         \"persistence\": {
           \"postgresql\": {
             \"secretRef\": {
-              \"name\": \"sonataflow-psql-postgresql\",
-              \"userKey\": \"postgres-username\",
-              \"passwordKey\": \"postgres-password\"
+              \"name\": \"rhdh-postgresql-svcbind-postgres\",
+              \"userKey\": \"username\",
+              \"passwordKey\": \"password\"
             },
             \"serviceRef\": {
-              \"name\": \"sonataflow-psql-postgresql\",
+              \"name\": \"rhdh-postgresql\",
               \"port\": 5432,
               \"databaseName\": \"sonataflow\",
               \"databaseSchema\": \"${WORKFLOW_ID}\"

@@ -10,7 +10,7 @@ start: LaunchJob
 extensions:
   - extensionid: workflow-uri-definitions
     definitions:
-      notifications: https://raw.githubusercontent.com/rhdhorchestrator/serverless-workflows/main/shared/specs/notifications-openapi.yaml
+      notifications: https://raw.githubusercontent.com/rhdhorchestrator/serverless-workflows/main/workflows/shared/specs/notifications-openapi.yaml
 functions:
   - name: launchJob
     operation: specs/aap-openapi.yaml#launchJob
@@ -21,6 +21,7 @@ functions:
   - name: logInfo
     type: custom
     operation: "sysout:INFO"
+
 states:
   - name: LaunchJob
     type: operation
