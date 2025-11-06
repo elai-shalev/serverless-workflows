@@ -1,9 +1,9 @@
 apiVersion: v1
 data:
   application.properties: |
-    # Notifications Settingss
-    quarkus.rest-client.notifications_openapi_yaml.url=${BACKSTAGE_NOTIFICATIONS_URL:http://localhost:7007/api/notifications}
-    quarkus.openapi-generator.notifications.auth.bearertoken.bearer-token=${NOTIFICATIONS_BEARER_TOKEN}
+    # Backstage Notifications service
+    quarkus.rest-client.notifications.url=${BACKSTAGE_NOTIFICATIONS_URL}
+    quarkus.openapi-generator.notifications.auth.BearerToken.bearer-token=${NOTIFICATIONS_BEARER_TOKEN}
 
     # Ansible Automation Platform Settings
     app_url=https://aap-aap.apps.cluster-xtvv4-1.dynamic.redhatworkshops.io
