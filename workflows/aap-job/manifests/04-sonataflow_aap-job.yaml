@@ -1,0 +1,161 @@
+apiVersion: sonataflow.org/v1alpha08
+kind: SonataFlow
+metadata:
+  annotations:
+    sonataflow.org/description: Workflow to launch a AAP job
+    sonataflow.org/expressionLang: jq
+    sonataflow.org/profile: gitops
+    sonataflow.org/version: 0.0.1
+  creationTimestamp: null
+  labels:
+    app: aap-job
+    sonataflow.org/workflow-app: aap-job
+  name: aap-job
+spec:
+  flow:
+    annotations:
+      - workflow-type/infrastructure
+    dataInputSchema:
+      failOnValidationErrors: true
+      schema: schemas/app-job-input-schema.json
+    functions:
+      - name: launchJob
+        operation: specs/aap-openapi.yaml#launchJob
+        type: rest
+      - name: getJob
+        operation: specs/aap-openapi.yaml#getJob
+        type: rest
+      - name: createNotification
+        operation: notifications#createNotification
+        type: rest
+      - name: logInfo
+        operation: sysout:INFO
+        type: custom
+    start:
+      stateName: LaunchJob
+    states:
+      - actionMode: sequential
+        actions:
+          - actionDataFilter:
+              toStateData: .launchedJob
+              useResults: true
+            functionRef:
+              arguments:
+                extra_vars:
+                  rhel_inventory_group: .inventoryGroup
+                job_template_id: .jobTemplateId
+                limit: .limit
+              invoke: sync
+              refName: launchJob
+        name: LaunchJob
+        stateDataFilter:
+          output: '.launchedJob += { outputUrl: .app_url +  "/#/jobs/playbook/" + (.launchedJob.id|tostring) + "/output" }'
+        transition:
+          nextState: GetJob
+        type: operation
+      - actionMode: sequential
+        actions:
+          - actionDataFilter:
+              useResults: true
+            functionRef:
+              arguments:
+                message: '"Sleeping before checking the aap job \(.launchedJob)"'
+              invoke: sync
+              refName: logInfo
+            sleep:
+              after: PT30S
+          - actionDataFilter:
+              toStateData: .readJob
+              useResults: true
+            functionRef:
+              arguments:
+                job_id: .launchedJob.id
+              invoke: sync
+              refName: getJob
+        name: GetJob
+        transition:
+          nextState: IsJobDone
+        type: operation
+      - dataConditions:
+          - condition: (.readJob.status == "successful")
+            transition:
+              nextState: SendSuccessNotification
+          - condition: (.readJob.failed == true)
+            transition:
+              nextState: SendFailureNotification
+        defaultCondition:
+          transition:
+            nextState: GetJob
+        name: IsJobDone
+        type: switch
+      - actionMode: sequential
+        actions:
+          - actionDataFilter:
+              useResults: true
+            functionRef:
+              arguments:
+                payload:
+                  description: '"AAP job workflow id: " + $WORKFLOW.instanceId + " for job template id: " + (.jobTemplateId|tostring) + " failed."'
+                  link: .launchedJob.outputUrl
+                  scope: AAP Job Workflow
+                  title: '"AAP Job Workflow " + $WORKFLOW.instanceId + " Failed"'
+                  topic: AAP Job Workflow
+                recipients:
+                  entityRef:
+                    - '"user:"+.backstageUser'
+                  type: entity
+              invoke: sync
+              refName: createNotification
+        end:
+          terminate: true
+        name: SendFailureNotification
+        type: operation
+      - actionMode: sequential
+        actions:
+          - actionDataFilter:
+              useResults: true
+            functionRef:
+              arguments:
+                payload:
+                  description: '"AAP job workflows id: " + $WORKFLOW.instanceId + " for job template id: " + (.jobTemplateId|tostring) + " succeeded."'
+                  link: .launchedJob.outputUrl
+                  scope: AAP Job Workflow
+                  title: '"AAP Job Workflow " + $WORKFLOW.instanceId + " Succeeded"'
+                  topic: AAP Job Workflow
+                recipients:
+                  entityRef:
+                    - '"user:"+.backstageUser'
+                  type: entity
+              invoke: sync
+              refName: createNotification
+        end:
+          terminate: true
+        name: SendSuccessNotification
+        type: operation
+  podTemplate:
+    container:
+      image: quay.io/eshalev/serverless-workflow-aap-job:38f0f9ed
+      imagePullPolicy: Always
+      resources: {}
+  resources:
+    configMaps:
+      - configMap:
+          name: 01-aap-job-resources-schemas
+        workflowPath: schemas
+      - configMap:
+          name: 02-aap-job-resources-specs
+        workflowPath: specs
+  persistence:
+    postgresql:
+      secretRef:
+        name: rhdh-postgresql-svcbind-postgres
+        userKey: username
+        passwordKey: password
+      serviceRef:
+        name: rhdh-postgresql
+        port: 5432
+        databaseName: sonataflow
+        databaseSchema: aap-job
+status:
+  address: {}
+  lastTimeRecoverAttempt: null

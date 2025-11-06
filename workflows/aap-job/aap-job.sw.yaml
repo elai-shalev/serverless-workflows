@@ -36,7 +36,7 @@ states:
         actionDataFilter:
           toStateData: .launchedJob
     stateDataFilter:
-      output: ".launchedJob += { outputUrl: $SECRET.app_url +  \"/#/jobs/playbook/\" + (.launchedJob.id|tostring) + \"/output\" }"
+      output: ".launchedJob += { outputUrl: .app_url +  \"/#/jobs/playbook/\" + (.launchedJob.id|tostring) + \"/output\" }"
     transition: GetJob
   - name: GetJob
     type: operation
@@ -92,7 +92,7 @@ states:
               entityRef:  ['"user:"+.backstageUser']
             payload:
               title: '"AAP Job Workflow " + $WORKFLOW.instanceId + " Succeeded"'
-              description: '"AAP job workflow id: " + $WORKFLOW.instanceId + " for job template id: " + (.jobTemplateId|tostring) + " succeeded."'
+              description: '"AAP job workflows id: " + $WORKFLOW.instanceId + " for job template id: " + (.jobTemplateId|tostring) + " succeeded."'
               scope: "AAP Job Workflow"
               topic: "AAP Job Workflow"
               link: .launchedJob.outputUrl

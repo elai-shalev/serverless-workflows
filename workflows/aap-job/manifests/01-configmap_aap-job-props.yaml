@@ -1,0 +1,23 @@
+apiVersion: v1
+data:
+  application.properties: |
+    # Notifications Settingss
+    quarkus.rest-client.notifications_openapi_yaml.url=${BACKSTAGE_NOTIFICATIONS_URL:http://localhost:7007/api/notifications}
+    quarkus.openapi-generator.notifications.auth.bearertoken.bearer-token=${NOTIFICATIONS_BEARER_TOKEN}
+
+    # Ansible Automation Platform Settings
+    app_url=https://aap-aap.apps.cluster-xtvv4-1.dynamic.redhatworkshops.io
+    quarkus.rest-client.aap_openapi_yaml.url=${app_url}
+    quarkus.openapi-generator.aap_openapi_yaml.auth.basicAuth.username=${AAP_USERNAME}
+    quarkus.openapi-generator.aap_openapi_yaml.auth.basicAuth.password=${AAP_PASSWORD}
+
+    quarkus.log.category."org.apache.http".level=DEBUG
+    quarkus.log.level=INFO
+    kie.flyway.enabled=true
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    app: aap-job
+    sonataflow.org/workflow-app: aap-job
+  name: aap-job-props

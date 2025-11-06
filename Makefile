@@ -92,6 +92,8 @@ else
 IMAGE_NAME = $(REGISTRY)/$(REGISTRY_REPO)/$(IMAGE_PREFIX)-$(APPLICATION_ID)
 endif
 
+# Always use --no-cache for docker/podman build commands
+NO_CACHE_FLAG ?= --no-cache
 
 ENABLE_PERSISTENCE ?= true
 
@@ -117,9 +119,9 @@ prepare-workdir:
 # Depends on: prepare-workdir target.
 # Usage: make build-image
 ifeq ($(IS_WORKFLOW),true)
-build-image: BUILD_ARGS=--build-arg-file=workflows/$(WORKFLOW_ID)/argfile.conf --build-arg=WORKFLOW_ID=$(WORKFLOW_ID) --build-arg=BUILDER_IMAGE=$(BUILDER_IMAGE) --build-arg WF_RESOURCES=workflows/$(WORKFLOW_ID)
+build-image: BUILD_ARGS=--build-arg-file=workflows/$(WORKFLOW_ID)/argfile.conf --build-arg=WORKFLOW_ID=$(WORKFLOW_ID) --build-arg=BUILDER_IMAGE=$(BUILDER_IMAGE) --build-arg WF_RESOURCES=workflows/$(WORKFLOW_ID) $(NO_CACHE_FLAG)
 endif
-build-image: EXTRA_ARGS=--ulimit nofile=4096:4096 --platform='linux/amd64'
+build-image: EXTRA_ARGS=--ulimit nofile=4096:4096 --platform='linux/amd64' $(NO_CACHE_FLAG)
 build-image: prepare-workdir
 	@echo "Building $(IMAGE_NAME)"
 ifeq ($(IS_APPLICATION),true)
